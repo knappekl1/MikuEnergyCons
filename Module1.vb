@@ -25,4 +25,43 @@
         Return result
     End Function
 
+    Public Function CreateConsumptionTable() As DataTable
+        Dim table As New DataTable
+        table.Columns.Add("DateTime", GetType(Date))
+        table.Columns.Add("Count", GetType(Decimal))
+        table.Columns.Add("Source", GetType(Integer))
+        Return table
+    End Function
+
+    Public Function CalculateConsumption(table As DataTable, metric As Integer) As DataTable
+        'Select only low or hi data
+        Dim Cons As DataTable = table.Select("[Source]='" + metric.ToString + "'").CopyToDataTable()
+        Dim outputTable As DataTable = Cons.Clone()
+        outputTable.Columns.Add("DailyCons", GetType(Decimal))
+
+
+        'Calculate daily consumption
+        Dim firstTick As Decimal = Cons.Rows(0).Item("Count") 'First datapoint
+        Dim lastTick As Decimal = Cons.Rows(Cons.Rows.Count - 1).Item("Count") 'Last Datapoint
+
+        For i As Integer = 0 To Cons.Rows.Count - 2
+            Dim Date1 As Date = Cons.Rows(i)("DateTime") 'V jednom výrazu to nejede- nechápu proč- je to objekt a asi se to musí napřed naparsovat na datum, pokud se používá v kombi výrazu- na dim date se to převede samo asi
+            Dim Date1Str As String = Date1.ToString("dd-MM-yyyy") 'ditto výše
+
+            Dim Date2 As Date = Cons.Rows(i + 1)("DateTime") 'ditto výše
+            Dim Date2Str As String = Date2.ToString("dd-MM-yyyy") 'ditto výše
+            If Not Date1Str = Date2Str Then 'ditto výše
+                Dim dayCons As Decimal = Cons.Rows(i).Item("Count") - firstTick
+                Dim dayDate As Date = Date.Parse(Date1Str)
+                firstTick = Cons.Rows(i).Item("Count")
+                outputTable.Rows.Add(dayDate, firstTick, metric, dayCons)
+            End If
+        Next i
+
+        Dim lastDate As Date = Cons.Rows(Cons.Rows.Count - 1)("DateTime") 'ditto výše
+        outputTable.Rows.Add(Date.Parse(lastDate.ToString("dd-MM-yyyy")), lastTick, metric, lastTick - firstTick)
+
+
+        Return outputTable
+    End Function
 End Module

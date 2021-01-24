@@ -9,7 +9,7 @@ Public Class Form1
 
         'Get last day before today from database
         Dim query As String = "SELECT * FROM last_date"
-        Dim outputVal(-1, -1) As String
+        Dim outputVal(,) As String
 
         Dim response As DataTable = GetDBdata(query)
         ReDim outputVal(response.Rows.Count - 1, response.Columns.Count - 1)
@@ -30,15 +30,32 @@ Public Class Form1
         Dim APIjson As JObject = JsonConvert.DeserializeObject(APIresponse)
         Dim keyVal As JToken
         Dim tokenValue As Decimal
-        For Each row In APIjson("data").ToList
-            keyVal = row("timestamp")
+
+        'Save values into Datatable
+        Dim ConsumptionTable As DataTable = CreateConsumptionTable() 'Create table via function
+
+
+        For Each row In APIjson("data").ToList 'convert JSON obj to list
+
+            keyVal = row("timestamp") ' get and save value from list
             tokenValue = DirectCast(keyVal, JValue).Value
-            'DODĚLAT    ZDE
+            Dim newDate As Date = Date.Parse("1970-01-01 00:00:00").AddSeconds(keyVal).ToLocalTime
+
+            keyVal = row("value") ' get and save value from list
+            tokenValue = DirectCast(keyVal, JValue).Value
+            Dim cons As Decimal = keyVal
+
+            keyVal = row("metric") ' get and save value from list
+            tokenValue = DirectCast(keyVal, JValue).Value
+            Dim metric As Integer = keyVal
+
+            ConsumptionTable.Rows.Add(newDate, cons, metric) 'Add extracted values to Datatable
         Next row
-        Dim test As String = APIjson("data")(0)("timestamp").ToString
 
+        'Process Table
 
-
+        Dim hiConsTable As DataTable = CalculateConsumption(ConsumptionTable, 1)
+        Dim lowConsTable As DataTable = CalculateConsumption(ConsumptionTable, 2)
 
 
     End Sub
