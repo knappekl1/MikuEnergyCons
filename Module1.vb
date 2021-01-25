@@ -15,6 +15,28 @@
         Return results
     End Function
 
+    Public Sub InsertIntoPostgre(ByVal values() As String)
+        Dim dayDate As Date = Date.Parse(values(0))
+        Dim total As String = values(1) ' tady je to Decimal s tečkou ale posílá se v odbc s čárkou, takže to nefunguje v paramatrech.
+        Dim dayCons As String = values(2) ' tady je to Decimal s tečkou ale posílá se v odbc s čárkou, takže to nefunguje v parametrech
+
+        Dim status As String
+        Dim connection As Odbc.OdbcConnection = New Odbc.OdbcConnection("DSN=HerokuDB")
+        connection.Open()
+        System.Console.WriteLine("State: " + connection.State.ToString())
+        status = connection.State.ToString()
+
+        Dim cmd As New Odbc.OdbcCommand("INSERT INTO day_cons (item_date, total, day_cons) VALUES (?," & total & "," & dayCons & ")", connection) 'V parametrech dělají problém čárky ve floating typech
+        cmd.Parameters.Add("item_date", Odbc.OdbcType.Date).Value = dayDate
+        'cmd.Parameters.Add("total", Odbc.OdbcType.Decimal).Value = Val(total)
+        'cmd.Parameters.Add("day_cons", Odbc.OdbcType.Decimal).Value = Val(dayCons)
+        cmd.ExecuteNonQuery()
+        cmd.Dispose()
+        connection.Close()
+
+
+    End Sub
+
     Public Function GetAPIdata(unixTime As Double) As String
         Dim endPoint As String = "https://api.visionq.cz/device_data.php?eui=0901288000016926&from=" & unixTime.ToString
         Dim webClient As New Net.WebClient
