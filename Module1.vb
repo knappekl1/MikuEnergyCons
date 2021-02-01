@@ -23,17 +23,22 @@
         Dim status As String
         Dim connection As Odbc.OdbcConnection = New Odbc.OdbcConnection("DSN=HerokuDB")
         connection.Open()
-        System.Console.WriteLine("State: " + connection.State.ToString())
+        'System.Console.WriteLine("State: " + connection.State.ToString())
         status = connection.State.ToString()
 
+        'Insert into table day_cons
         Dim cmd As New Odbc.OdbcCommand("INSERT INTO day_cons (item_date, total, day_cons) VALUES (?," & total & "," & dayCons & ")", connection) 'V parametrech dělají problém čárky ve floating typech
         cmd.Parameters.Add("item_date", Odbc.OdbcType.Date).Value = dayDate
         'cmd.Parameters.Add("total", Odbc.OdbcType.Decimal).Value = Val(total)
         'cmd.Parameters.Add("day_cons", Odbc.OdbcType.Decimal).Value = Val(dayCons)
         cmd.ExecuteNonQuery()
         cmd.Dispose()
-        connection.Close()
 
+        'Refresh materialized view day_MA7 (calculating 7 day MA)
+        Dim refresh As New Odbc.OdbcCommand("REFRESH MATERIALIZED VIEW CONCURRENTLY day_ma7", connection)
+        refresh.ExecuteNonQuery()
+        refresh.Dispose()
+        connection.Close()
 
     End Sub
 

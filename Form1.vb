@@ -19,7 +19,7 @@ Public Class lbOutput
 
         'Check if any data to process
         tbConsumption.Text = response.Rows(0).Item(0)
-        If (Today - lastDBdate).TotalDays <= 2 Then
+        If (Today - lastDBdate).TotalDays < 2 Then
             MessageBox.Show("No New data to process, DB already updated")
             Return
         End If
