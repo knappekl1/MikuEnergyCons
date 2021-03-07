@@ -21,6 +21,7 @@ Public Class lbOutput
         tbConsumption.Text = response.Rows(0).Item(0)
         If (Today - lastDBdate).TotalDays < 2 Then
             MessageBox.Show("No New data to process, DB already updated")
+            ShowGraph()
             Return
         End If
 
@@ -98,6 +99,8 @@ Public Class lbOutput
             values(2) = temp.ToString("F2", Globalization.CultureInfo.CreateSpecificCulture("en-US")) ' je to jedno, udělá se tam čárka až když se to posílá do Postgresql
             InsertIntoPostgre(values)
         Next row
+
+        ShowGraph()
 
 
     End Sub

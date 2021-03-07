@@ -91,4 +91,14 @@
 
         Return outputTable
     End Function
+
+    Public Sub ShowGraph()
+        'decide on showing a graph
+
+        Dim decide As Integer = MessageBox.Show("Show graph?", "Results", MessageBoxButtons.YesNo)
+        If decide = 7 Then Return '7 is button value for "No"
+
+        'Show Graph
+        GraphForm.Show()
+    End Sub
 End Module
